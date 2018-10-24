@@ -1,19 +1,27 @@
 const express = require('express')
-const createAuthApp = require('./auth')
+const auth = require('./auth')
 
-module.exports = () => {
-  let app = express()
+const server = {
+  app: express(),
 
-  // Add Middleware to log requests
-  app.use((req, res, next) => {
-    console.log(`[${req.method}] ${req.url}`)
-    return next()
-  })
+  init: function () {
+    this.app.use((req, res, next) => {
+      console.log(`[${req.method}] ${req.url}`)
+      return next()
+    })
 
-  // Mount express authorizer app
-  app.use('/auth', createAuthApp())
+    // Mount express authorizer app
+    auth.init()
+    this.app.use('/auth', auth.app)
 
-  app.listen(8005, function () {
-    console.log('Starting Peatio development authz server on localhost:8005')
-  })
+    return this
+  },
+
+  start: function () {
+    this.app.listen(8005, function () {
+      console.log('Starting Peatio development authz server on localhost:8005')
+    })
+  }
 }
+
+module.exports = server
