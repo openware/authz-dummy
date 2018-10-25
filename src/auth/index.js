@@ -6,11 +6,16 @@ const auth = {
   // Create express middleware instance
   app: express(),
 
-  // Private key for generating JWT
-  jwtPrivateKey: Buffer.from((process.env.JWT_PRIVATE_KEY || ''), 'base64').toString('ascii'),
+  // load configs on mount
+  init: function () {
+    this.app.on('mount', (root) => {
+      this.config = root.locals.config
+      this.drawRoutes()
+    })
+  },
 
   // Initialize auth middleware routes
-  init: function () {
+  drawRoutes: function() {
     // Skip authentication for open endpoints and static files
     this.app.all([
       // root path
@@ -24,9 +29,7 @@ const auth = {
     ], (req, res) => res.send(200))
 
     this.app.all('*', (req, res) => {
-      // TODO: check for a "Set-Cookie" header and return default user data
-
-      let token = jwt.sign(this.generatePayload(), this.jwtPrivateKey, { algorithm: 'RS256' })
+      let token = jwt.sign(this.generatePayload(), this.config.jwtPrivateKey, { algorithm: 'RS256' })
 
       res.set('Authorization', `Bearer ${token}`)
       res.status(200).end()

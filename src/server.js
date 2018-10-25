@@ -1,10 +1,14 @@
 const express = require('express')
+
+const config = require('./config')
 const auth = require('./auth')
 
 const server = {
   app: express(),
 
   init: function () {
+    this.app.locals.config = config.load()
+
     this.app.use((req, res, next) => {
       console.log(`[${req.method}] ${req.url}`)
       return next()
